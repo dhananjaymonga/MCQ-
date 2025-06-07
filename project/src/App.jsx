@@ -1,0 +1,46 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+
+// Layout components
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+
+// Pages
+import HomePage from './pages/HomePage';
+import NotesPage from './pages/NotesPage';
+import VideoPage from './pages/VideoPage';
+import BlogPage from './pages/BlogPage';
+import ServicesPage from './pages/ServicesPage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import ScrollToTop from './components/utils/ScrollToTop';
+import AdminPanel from './Admin';
+
+function App() {
+  return (
+    <Router>
+      <ScrollToTop />
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow">
+          <AnimatePresence mode="wait">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/notes" element={<NotesPage />} />
+              <Route path="/videos" element={<VideoPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/admin" element={<AdminPanel />} />
+            </Routes>
+          </AnimatePresence>
+        </main>
+        <Footer />
+      </div>
+    </Router>
+  );
+}
+
+export default App;
