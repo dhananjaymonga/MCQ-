@@ -15,7 +15,8 @@ import ServicesPage from './pages/ServicesPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ScrollToTop from './components/utils/ScrollToTop';
-import AdminPanel from './Admin';
+import AdminNotes from './Admin/AdminNotes';
+import AdminBlog from "./Admin/AdminBlog"
 
 function App() {
   return (
@@ -33,7 +34,8 @@ function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
-              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/admin/notes" element={<AdminNotes />} />
+              <Route path="/admin/blog" element={<AdminBlog />} />
             </Routes>
           </AnimatePresence>
         </main>
