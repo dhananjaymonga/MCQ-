@@ -5,7 +5,7 @@ const {
   getAllBlogs,
   editBlog,
   deleteBlog,
-} = require("../controllers/blogController");
+} = require("../controllers/blog");
 
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });

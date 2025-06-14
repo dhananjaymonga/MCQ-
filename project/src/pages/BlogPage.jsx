@@ -1,19 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, BookOpen } from 'lucide-react';
+import { Search, Filter, BookOpen, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 import BlogCard from '../components/blog/BlogCard';
 import FilterDropdown from '../components/notes/FilterDropdown';
-import { mockBlogs } from '../data/mockData';
 
 const BlogPage = () => {
-  const [blogs, setBlogs] = useState(mockBlogs);
-  const [filteredBlogs, setFilteredBlogs] = useState(mockBlogs);
+  const [blogs, setBlogs] = useState([]);
+  const [filteredBlogs, setFilteredBlogs] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const categories = ['physics', 'chemistry', 'biology', 'study tips', 'exam preparation'];
+  // Fetch blogs from API
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:5000/api/blogs");
+        setBlogs(response.data);
+        setFilteredBlogs(response.data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching blogs:', error);
+        setError('Failed to fetch blogs. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
+  // Get unique categories from blogs
+  const categories = [...new Set(blogs.map(blog => blog.category?.toLowerCase()).filter(Boolean))];
 
   useEffect(() => {
     let result = blogs;
@@ -21,9 +44,7 @@ const BlogPage = () => {
     // Filter by category
     if (activeCategory) {
       result = result.filter(blog => 
-        blog.categories.some(category => 
-          category.toLowerCase() === activeCategory.toLowerCase()
-        )
+        blog.category?.toLowerCase() === activeCategory.toLowerCase()
       );
     }
 
@@ -31,8 +52,10 @@ const BlogPage = () => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(blog => 
-        blog.title.toLowerCase().includes(query) || 
-        blog.excerpt.toLowerCase().includes(query)
+        blog.title?.toLowerCase().includes(query) || 
+        blog.description?.toLowerCase().includes(query) ||
+        blog.author?.toLowerCase().includes(query) ||
+        blog.tags?.some(tag => tag.toLowerCase().includes(query))
       );
     }
 
@@ -56,8 +79,44 @@ const BlogPage = () => {
     }
   };
 
-  // Featured blogs
+  // Featured blogs (you can add a featured field to your blog schema)
   const featuredBlogs = blogs.filter(blog => blog.featured);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="pt-24 pb-16">
+        <div className="container-custom">
+          <div className="flex flex-col items-center justify-center min-h-96">
+            <Loader2 className="h-12 w-12 animate-spin text-primary-600 mb-4" />
+            <p className="text-gray-600">Loading blogs...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="pt-24 pb-16">
+        <div className="container-custom">
+          <div className="flex flex-col items-center justify-center min-h-96 text-center">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+              <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Blogs</h3>
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                className="btn-primary"
+                onClick={() => window.location.reload()}
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -94,7 +153,7 @@ const BlogPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {featuredBlogs.slice(0, 2).map((blog) => (
                 <BlogCard 
-                  key={blog.id} 
+                  key={blog._id} 
                   blog={blog}
                   featured={true}
                 />
@@ -113,7 +172,7 @@ const BlogPage = () => {
               <input
                 type="text"
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                placeholder="Search articles..."
+                placeholder="Search articles by title, description, author, or tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -159,12 +218,26 @@ const BlogPage = () => {
           )}
         </div>
 
+        {/* Blog Count */}
+        {blogs.length > 0 && (
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-gray-600">
+              Showing {filteredBlogs.length} of {blogs.length} articles
+            </p>
+            {(activeCategory || searchQuery) && (
+              <button
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                onClick={resetFilters}
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Blog List */}
         {filteredBlogs.length > 0 ? (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">
-              {filteredBlogs.length} {filteredBlogs.length === 1 ? 'Article' : 'Articles'} Found
-            </h2>
             <motion.div 
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               variants={containerVariants}
@@ -172,10 +245,10 @@ const BlogPage = () => {
               animate="visible"
             >
               {filteredBlogs
-                .filter(blog => !featuredBlogs.slice(0, 2).some(featured => featured.id === blog.id))
+                .filter(blog => !featuredBlogs.slice(0, 2).some(featured => featured._id === blog._id))
                 .map((blog) => (
                   <BlogCard 
-                    key={blog.id} 
+                    key={blog._id} 
                     blog={blog}
                     featured={false}
                   />
@@ -187,13 +260,16 @@ const BlogPage = () => {
             <BookOpen className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-xl font-semibold mb-2">No Articles Found</h3>
             <p className="text-gray-500 mb-4">
-              We couldn't find any articles matching your filters. Try adjusting your search or filters.
+              {searchQuery || activeCategory 
+                ? "We couldn't find any articles matching your filters. Try adjusting your search or filters."
+                : "No articles have been published yet."
+              }
             </p>
             <button
               className="btn-primary"
               onClick={resetFilters}
             >
-              Reset Filters
+              {searchQuery || activeCategory ? 'Reset Filters' : 'Refresh'}
             </button>
           </div>
         )}
