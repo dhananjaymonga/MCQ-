@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, BookOpen, Loader2 } from 'lucide-react';
 import axios from 'axios';
+const backendURL = import.meta.env.VITE_BACKEND_URL;
 
 import BlogCard from '../components/blog/BlogCard';
 import FilterDropdown from '../components/notes/FilterDropdown';
@@ -20,7 +21,8 @@ const BlogPage = () => {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/api/blogs");
+const response = await axios.get("https://mcq-0ldp.onrender.com/api/blogs");
+
         setBlogs(response.data);
         setFilteredBlogs(response.data);
         setError(null);
