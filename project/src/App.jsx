@@ -17,6 +17,8 @@ import ContactPage from './pages/ContactPage';
 import ScrollToTop from './components/utils/ScrollToTop';
 import AdminNotes from './Admin/AdminNotes';
 import AdminBlog from "./Admin/AdminBlog"
+import Admin from "./Admin/Admin"
+import HistoryPage from './Admin/History';
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/admin/notes" element={<AdminNotes />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/historypa" element={<HistoryPage />} />
               <Route path="/admin/blog" element={<AdminBlog />} />
             </Routes>
           </AnimatePresence>

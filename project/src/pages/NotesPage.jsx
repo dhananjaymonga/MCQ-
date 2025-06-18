@@ -24,7 +24,7 @@ const NotesPage = () => {
     const fetchNotes = async () => {
       try {
         // const response = await fetch('http://localhost:5000/api/pdfs');
-        const response = await fetch('https://mcq-0ldp.onrender.com/api/pdfs');
+        const response = await fetch('https://pdfman.onrender.com/api/pdfs');
 
         if (!response.ok) {
           throw new Error('Failed to fetch notes');
