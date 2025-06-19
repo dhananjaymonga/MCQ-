@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
 // Layout components
@@ -15,10 +15,50 @@ import ServicesPage from './pages/ServicesPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ScrollToTop from './components/utils/ScrollToTop';
+
+// Admin components
 import AdminNotes from './Admin/AdminNotes';
-import AdminBlog from "./Admin/AdminBlog"
-import Admin from "./Admin/Admin"
+import AdminBlog from "./Admin/AdminBlog";
+import Admin from "./Admin/Admin";
 import HistoryPage from './Admin/History';
+import Login from './Admin/Login';
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('adminToken');
+    
+    if (!token) {
+      return false;
+    }
+    
+    try {
+      // Optional: Check if token is expired
+      // You can decode JWT token here if you're using JWT
+      // const decodedToken = jwt_decode(token);
+      // return decodedToken.exp > Date.now() / 1000;
+      
+      return true;
+    } catch (error) {
+      // If token is invalid, remove it
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      return false;
+    }
+  };
+
+  return isAuthenticated() ? children : <Navigate to="/admin/login" replace />;
+};
+
+// Public Route Component (redirects to admin if already logged in)
+const PublicRoute = ({ children }) => {
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('adminToken');
+    return !!token;
+  };
+
+  return isAuthenticated() ? <Navigate to="/admin" replace /> : children;
+};
 
 function App() {
   return (
@@ -29,6 +69,7 @@ function App() {
         <main className="flex-grow">
           <AnimatePresence mode="wait">
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/notes" element={<NotesPage />} />
               <Route path="/videos" element={<VideoPage />} />
@@ -36,10 +77,57 @@ function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
-              <Route path="/admin/notes" element={<AdminNotes />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/historypa" element={<HistoryPage />} />
-              <Route path="/admin/blog" element={<AdminBlog />} />
+              
+              {/* Admin Login Route (public but redirects if already logged in) */}
+              <Route 
+                path="/admin/login" 
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                } 
+              />
+              
+              {/* Protected Admin Routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin/notes" 
+                element={
+                  <ProtectedRoute>
+                    <AdminNotes />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin/blog" 
+                element={
+                  <ProtectedRoute>
+                    <AdminBlog />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/historypa" 
+                element={
+                  <ProtectedRoute>
+                    <HistoryPage />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Fallback Routes */}
+              <Route path="/admin/*" element={<Navigate to="/admin/login" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </AnimatePresence>
         </main>

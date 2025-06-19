@@ -243,8 +243,8 @@ const AdminPanel = () => {
   }, [selectedSubject, selectedClass, searchTerm, pdfs]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 ">
+      <div className="max-w-7xl mx-auto m-20">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex justify-between items-center">

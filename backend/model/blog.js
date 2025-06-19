@@ -9,6 +9,8 @@ const blogSchema = new mongoose.Schema({
   category: String,
   tags: [String],
   image: String,
+  imageFileId: String, // ImageKit file ID for deletion
+imageName: String,
   imagePublicId: String, // Add this field
 }, { timestamps: true });
 

@@ -30,6 +30,13 @@ const NotesPage = () => {
           throw new Error('Failed to fetch notes');
         }
         const data = await response.json();
+        console.log('Fetched notes:', data); // Debug log
+        
+        // Debug: Show unique class values in your data
+        const uniqueClasses = [...new Set(data.map(note => note.class))];
+        console.log('Unique class values found:', uniqueClasses);
+        console.log('Unique class types:', uniqueClasses.map(c => typeof c));
+        
         setNotes(data);
         setFilteredNotes(data);
       } catch (err) {
@@ -42,32 +49,66 @@ const NotesPage = () => {
     fetchNotes();
   }, []);
 
+  // Fixed filtering logic
   useEffect(() => {
-    let result = notes;
+    let result = [...notes]; // Create a copy to avoid mutation
 
-    // Filter by class
-    if (activeClass) {
-      result = result.filter(note => note.class === activeClass);
+    console.log('Filtering with:', { activeClass, activeSubject, searchQuery }); // Debug log
+
+    // Filter by class - improved comparison logic
+    if (activeClass !== null && activeClass !== '') {
+      result = result.filter(note => {
+        console.log('Note class:', note.class, 'Type:', typeof note.class);
+        console.log('Active class:', activeClass, 'Type:', typeof activeClass);
+        
+        // Convert both to strings for comparison to handle edge cases
+        const noteClassStr = String(note.class).trim();
+        const activeClassStr = String(activeClass).trim();
+        
+        // Also try numeric comparison
+        const noteClassNum = parseInt(noteClassStr);
+        const activeClassNum = parseInt(activeClassStr);
+        
+        const stringMatch = noteClassStr === activeClassStr;
+        const numericMatch = !isNaN(noteClassNum) && !isNaN(activeClassNum) && noteClassNum === activeClassNum;
+        
+        console.log('String match:', stringMatch, 'Numeric match:', numericMatch);
+        
+        return stringMatch || numericMatch;
+      });
+      console.log('After class filter:', result.length);
     }
 
-    // Filter by subject
-    if (activeSubject) {
-      result = result.filter(note => note.subject.toLowerCase() === activeSubject);
+    // Filter by subject - ensure proper case handling
+    if (activeSubject !== null && activeSubject !== '') {
+      result = result.filter(note => {
+        const noteSubject = note.subject?.toLowerCase().trim();
+        const filterSubject = activeSubject.toLowerCase().trim();
+        return noteSubject === filterSubject;
+      });
+      console.log('After subject filter:', result.length);
     }
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(note => 
-        note.title.toLowerCase().includes(query) || 
-        note.description.toLowerCase().includes(query)
-      );
+    // Filter by search query - improved search logic
+    if (searchQuery && searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(note => {
+        const title = note.title?.toLowerCase() || '';
+        const description = note.description?.toLowerCase() || '';
+        const subject = note.subject?.toLowerCase() || '';
+        
+        return title.includes(query) || 
+               description.includes(query) || 
+               subject.includes(query);
+      });
+      console.log('After search filter:', result.length);
     }
 
+    console.log('Final filtered result:', result.length);
     setFilteredNotes(result);
   }, [activeClass, activeSubject, searchQuery, notes]);
 
-  // Toggle pin status
+  // Toggle pin status - fixed API endpoint
   const togglePin = async (id) => {
     try {
       const updatedNotes = notes.map(note => 
@@ -75,17 +116,27 @@ const NotesPage = () => {
       );
       setNotes(updatedNotes);
       
-      // Update on server
+      // Update on server - use the correct endpoint
       const noteToUpdate = notes.find(note => note.id === id);
-      await fetch(`http://localhost:5000/api/pdfs/${id}`, {
+      // const response = await fetch(`http://localhost:5000/api/pdfs/${id}`, {
+      const response = await fetch(`https://pdfman.onrender.com/api/pdfs/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ pinned: !noteToUpdate.pinned }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update pin status');
+      }
     } catch (err) {
       console.error('Error updating pin status:', err);
+      // Revert the optimistic update on error
+      const revertedNotes = notes.map(note => 
+        note.id === id ? { ...note, pinned: !note.pinned } : note
+      );
+      setNotes(revertedNotes);
     }
   };
 
@@ -164,6 +215,45 @@ const NotesPage = () => {
           </motion.p>
         </div>
 
+        {/* Active Filters Display */}
+        {(activeClass || activeSubject || searchQuery) && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {activeClass && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
+                Class {activeClass}
+                <button
+                  onClick={() => setActiveClass(null)}
+                  className="ml-2 text-primary-600 hover:text-primary-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {activeSubject && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
+                {activeSubject.charAt(0).toUpperCase() + activeSubject.slice(1)}
+                <button
+                  onClick={() => setActiveSubject(null)}
+                  className="ml-2 text-primary-600 hover:text-primary-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {searchQuery && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
+                Search: "{searchQuery}"
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="ml-2 text-primary-600 hover:text-primary-800"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Search and Filters */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -211,7 +301,7 @@ const NotesPage = () => {
                     label: s.charAt(0).toUpperCase() + s.slice(1)
                   }))}
                   value={activeSubject || ''}
-                  onChange={(value) => setActiveSubject(value)}
+                  onChange={(value) => setActiveSubject(value || null)}
                 />
               </div>
               <div className="mt-4 flex justify-end">
