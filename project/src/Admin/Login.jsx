@@ -4,7 +4,7 @@ import { User, Lock, Eye, EyeOff } from 'lucide-react';
 const AdminLogin = () => {
   const [loginData, setLoginData] = useState({
     username: '',
-    password: '',
+    password: ''
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -14,7 +14,9 @@ const AdminLogin = () => {
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     if (token) {
-      window.location.replace('/admin1');
+      // Redirect to admin dashboard if already logged in
+      window.history.pushState(null, '', '/adminpage');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
   }, []);
 
@@ -28,8 +30,7 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      // Replace this with your actual API endpoint
-      const response = await fetch('http://localhost:5000/api/admin/login', {
+      const response = await fetch('https://admin-pannel-7lg4.onrender.com/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,33 +41,19 @@ const AdminLogin = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store token in localStorage
+        // Store token and user data
         localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminUser', JSON.stringify(data.user));
-
-        setError('Login successful! Redirecting...');
         
-        // Redirect to /admin1 route
-        setTimeout(() => {
-          // Using replace to prevent going back to login page
-          window.location.replace('/admin');
-        }, 1500);
+        // Navigate to admin dashboard without page refresh
+        window.history.pushState(null, '', '/adminpage');
+        window.dispatchEvent(new PopStateEvent('popstate'));
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      
-      // For demo purposes, simulate successful login with default credentials
-      if (loginData.username === 'admin' && loginData.password === 'password') {
-        setError('Login successful! Redirecting...');
-        setTimeout(() => {
-          // Using replace to prevent going back to login page
-          window.location.replace('/admin1');
-        }, 1500);
-      } else {
-        setError('Connection error. Please make sure the server is running, or use admin/password for demo.');
-      }
+      setError('Connection error. Please check your internet connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -99,9 +86,7 @@ const AdminLogin = () => {
               <input
                 type="text"
                 value={loginData.username}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, username: e.target.value })
-                }
+                onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
                 onKeyPress={handleKeyPress}
                 className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent"
                 placeholder="Enter username"
@@ -118,9 +103,7 @@ const AdminLogin = () => {
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={loginData.password}
-                onChange={(e) =>
-                  setLoginData({ ...loginData, password: e.target.value })
-                }
+                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 onKeyPress={handleKeyPress}
                 className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent"
                 placeholder="Enter password"
@@ -136,13 +119,7 @@ const AdminLogin = () => {
           </div>
 
           {error && (
-            <div
-              className={`rounded-lg p-3 text-sm ${
-                error.startsWith('Login successful')
-                  ? 'bg-green-500/20 border border-green-500/30 text-green-200'
-                  : 'bg-red-500/20 border border-red-500/30 text-red-200'
-              }`}
-            >
+            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-red-200 text-sm">
               {error}
             </div>
           )}
