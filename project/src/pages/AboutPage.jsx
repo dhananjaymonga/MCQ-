@@ -182,7 +182,7 @@ const AboutPage = () => {
             >
               <h3 className="text-2xl font-semibold mb-4 text-primary-600">Our Mission</h3>
               <p className="text-gray-600">
-                To provide high-quality, accessible science education to students across India, regardless of their geographical location or economic background. We aim to simplify complex scientific concepts and make learning an enjoyable experience.
+PCMB with Malika is an innovative online education platform dedicated to delivering high-quality learning in #physics, #chemistry, #biology, and #science for students preparing for #NEET, #JEEMains, and those in #Class6, #Class7, #Class8, #Class9, #Class10, #Class11, and #Class12. Our mission is to inspire students to embrace the CAS rule (Clarity, Accuracy, Simplicity) while fostering a deep understanding of concepts without relying on rote memorization. We specialize in clarifying doubts related to #MCQs, #MCQChemistry, #ImportantMCQs, and #MCQPractice, ensuring effective learning. Additionally, we keep students informed with the latest updates on CBSE and State Board news. #MalikaMam #ScienceWithMalikaMam #NEET #MedicalStudent
               </p>
             </motion.div>
 
@@ -206,7 +206,7 @@ const AboutPage = () => {
       <section className="py-12">
         <div className="container-custom">
           <div className="text-center mb-12">
-            <motion.h2 
+            <motion.h2 J
               className="text-3xl font-bold mb-4"
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
