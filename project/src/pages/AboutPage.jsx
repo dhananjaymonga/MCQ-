@@ -102,7 +102,7 @@ const AboutPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              About MHS Guruk
+              About PCMB with Malika
             </motion.h1>
             <motion.p
               className="text-xl text-gray-600 mb-8"
@@ -129,7 +129,7 @@ const AboutPage = () => {
             >
               <h2 className="text-3xl font-bold mb-6">Our Story</h2>
               <p className="text-gray-600 mb-4">
-                MHS Guruk was founded by a team of passionate educators with a mission to make quality science education accessible to all students across India. What started as a small YouTube channel has now grown into a comprehensive educational platform serving thousands of students.
+               PCMB with Malika was founded by a team of passionate educators with a mission to make quality science education accessible to all students across India. What started as a small YouTube channel has now grown into a comprehensive educational platform serving thousands of students.
               </p>
               <p className="text-gray-600 mb-4">
                 We believe that every student has the potential to excel in science subjects when provided with the right guidance and resources. Our teaching methodology focuses on building strong fundamentals and critical thinking skills rather than rote memorization.
@@ -356,7 +356,7 @@ const AboutPage = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              Start learning with MHS Guruk today and unlock your full potential in science subjects.
+              Start learning with PCMB with Malika today and unlock your full potential in science subjects.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -365,7 +365,7 @@ const AboutPage = () => {
               viewport={{ once: true }}
             >
               <a 
-                href="https://www.youtube.com" 
+                href="https://www.youtube.com/@PCMB_with_Malika" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-white text-primary-600 hover:bg-gray-100 px-6 py-3 rounded-md font-medium inline-flex items-center"

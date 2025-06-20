@@ -1,14 +1,414 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Filter, Video, Play, Clock, Eye } from 'lucide-react';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Filter, Video, Play, Clock, Eye, X, ThumbsUp, Share2, Download, MoreHorizontal, ArrowLeft, ArrowUp, ArrowDown, Volume2, VolumeX, Heart, MessageCircle, Bookmark, Send } from 'lucide-react';
 
 // YouTube API configuration
 const API_KEY = "AIzaSyBKhtL5_3QiPQxzhd60smT6UFZltLqyZBM";
 const CHANNEL_ID = 'UCe_4EwNFWnGMMymUqRcDP7A';
 const UPLOADS_PLAYLIST_ID = 'UUe_4EwNFWnGMMymUqRcDP7A';
 
+// Shorts Player Component
+const ShortsPlayer = ({ shorts, currentIndex, onClose, onNext, onPrevious }) => {
+  const [muted, setMuted] = useState(false);
+  const [showActions, setShowActions] = useState(true);
+  const videoRef = useRef(null);
+
+  const currentShort = shorts[currentIndex];
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowActions(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex]);
+
+  const handleVideoClick = () => {
+    setShowActions(!showActions);
+  };
+
+  const handleMuteToggle = () => {
+    setMuted(!muted);
+    if (videoRef.current) {
+      videoRef.current.muted = !muted;
+    }
+  };
+
+  const formatViewCount = (count) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
+    return count.toString();
+  };
+
+  if (!currentShort) return null;
+
+  return (
+    <motion.div
+      className="fixed inset-0 bg-black z-50 overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="relative h-full w-full">
+        {/* Video Container */}
+        <div className="relative h-full w-full flex items-center justify-center">
+          <div 
+            className="relative h-full max-w-md w-full bg-black cursor-pointer"
+            onClick={handleVideoClick}
+          >
+            {/* Video Player */}
+            <iframe
+              ref={videoRef}
+              src={`https://www.youtube.com/embed/${currentShort.id}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${currentShort.id}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1`}
+              className="w-full h-full object-cover"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+
+            {/* Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+            
+            {/* Top Controls */}
+            <AnimatePresence>
+              {showActions && (
+                <motion.div
+                  className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  <button
+                    onClick={onClose}
+                    className="p-2 bg-black/50 rounded-full text-white hover:bg-black/70 transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                  <div className="text-white text-sm font-medium">
+                    {currentIndex + 1} / {shorts.length}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Bottom Info */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+              <div className="mb-4">
+                <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                  {currentShort.title}
+                </h3>
+                <p className="text-sm opacity-80 line-clamp-2">
+                  {currentShort.description}
+                </p>
+                <div className="flex items-center mt-2 text-xs opacity-70">
+                  <Eye className="h-3 w-3 mr-1" />
+                  <span>{formatViewCount(currentShort.viewCount)} views</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Side Actions */}
+          <div className="absolute right-4 bottom-20 flex flex-col space-y-4">
+            <button className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors">
+              <Heart className="h-6 w-6" />
+            </button>
+            <div className="text-center">
+              <button className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors">
+                <MessageCircle className="h-6 w-6" />
+              </button>
+              <span className="block text-xs text-white mt-1">125</span>
+            </div>
+            <button className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors">
+              <Bookmark className="h-6 w-6" />
+            </button>
+            <button className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors">
+              <Share2 className="h-6 w-6" />
+            </button>
+            <button 
+              onClick={handleMuteToggle}
+              className="p-3 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+            >
+              {muted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+            </button>
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col space-y-4">
+            {currentIndex > 0 && (
+              <button
+                onClick={onPrevious}
+                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+              >
+                <ArrowUp className="h-5 w-5" />
+              </button>
+            )}
+            {currentIndex < shorts.length - 1 && (
+              <button
+                onClick={onNext}
+                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors"
+              >
+                <ArrowDown className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Shorts Grid Component
+const ShortsGrid = ({ shorts, onShortsSelect }) => {
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Shorts</h2>
+        <div className="text-sm text-gray-500">
+          {shorts.length} shorts available
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {shorts.map((short, index) => (
+          <motion.div
+            key={short.id}
+            className="relative aspect-[9/16] bg-gray-900 rounded-lg overflow-hidden cursor-pointer group"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => onShortsSelect(index)}
+          >
+            <img
+              src={short.thumbnail}
+              alt={short.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+            
+            {/* Play Button */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 group-hover:bg-white/30 transition-colors">
+                <Play className="h-6 w-6 text-white" />
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+              <Clock className="h-3 w-3 inline mr-1" />
+              0:60
+            </div>
+
+            {/* Views */}
+            <div className="absolute bottom-2 left-2 flex items-center text-white text-xs">
+              <Eye className="h-3 w-3 mr-1" />
+              {short.viewCount >= 1000000 
+                ? `${(short.viewCount / 1000000).toFixed(1)}M`
+                : short.viewCount >= 1000 
+                ? `${(short.viewCount / 1000).toFixed(1)}K`
+                : short.viewCount}
+            </div>
+
+            {/* Title Overlay */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8">
+              <h3 className="text-white text-sm font-medium line-clamp-2">
+                {short.title}
+              </h3>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// YouTube Video Player Component
+const VideoPlayer = ({ video, onClose, onVideoSelect, allVideos }) => {
+  const [showDescription, setShowDescription] = useState(false);
+  
+  const formatViewCount = (count) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M views`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K views`;
+    }
+    return `${count} views`;
+  };
+
+  const formatPublishedDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const getRelatedVideos = () => {
+    return allVideos
+      .filter(v => v.id !== video.id)
+      .filter(v => v.subject === video.subject || v.class === video.class)
+      .slice(0, 10);
+  };
+
+  return (
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-95 z-50 overflow-y-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="min-h-screen bg-black text-white">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 bg-black bg-opacity-90">
+          <button
+            onClick={onClose}
+            className="flex items-center text-white hover:text-gray-300 transition-colors"
+          >
+            <ArrowLeft className="h-6 w-6 mr-2" />
+            Back to Videos
+          </button>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-gray-300 transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 pb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Video Section */}
+            <div className="lg:col-span-2">
+              {/* Video Player */}
+              <div className="relative bg-black rounded-lg overflow-hidden mb-4">
+                <div className="aspect-video">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
+                    title={video.title}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+
+              {/* Video Info */}
+              <div className="mb-6">
+                <h1 className="text-xl md:text-2xl font-bold mb-2 text-white">
+                  {video.title}
+                </h1>
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                  <div className="flex items-center text-gray-300 text-sm mb-2 md:mb-0">
+                    <Eye className="h-4 w-4 mr-2" />
+                    <span className="mr-4">{formatViewCount(video.viewCount)}</span>
+                    <span>{formatPublishedDate(video.publishedAt)}</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    <button className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
+                      <ThumbsUp className="h-4 w-4" />
+                      <span className="text-sm">{video.likeCount ? `${video.likeCount}` : 'Like'}</span>
+                    </button>
+                    <button className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
+                      <Share2 className="h-4 w-4" />
+                      <span className="text-sm">Share</span>
+                    </button>
+                    <button className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
+                      <Download className="h-4 w-4" />
+                      <span className="text-sm">Save</span>
+                    </button>
+                    <button className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tags */}
+                {video.tags && video.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {video.tags.slice(0, 5).map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-800 text-gray-300 text-xs rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Description */}
+                <div className="bg-gray-900 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">Description</h3>
+                    <button
+                      onClick={() => setShowDescription(!showDescription)}
+                      className="text-blue-400 hover:text-blue-300 text-sm"
+                    >
+                      {showDescription ? 'Show less' : 'Show more'}
+                    </button>
+                  </div>
+                  <p className={`text-gray-300 text-sm leading-relaxed ${
+                    showDescription ? '' : 'line-clamp-3'
+                  }`}>
+                    {video.description || 'No description available'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar - Related Videos */}
+            <div className="lg:col-span-1">
+              <h3 className="text-lg font-semibold mb-4 text-white">Related Videos</h3>
+              <div className="space-y-3">
+                {getRelatedVideos().map((relatedVideo) => (
+                  <div
+                    key={relatedVideo.id}
+                    className="flex cursor-pointer hover:bg-gray-900 p-2 rounded-lg transition-colors"
+                    onClick={() => onVideoSelect(relatedVideo)}
+                  >
+                    <div className="relative flex-shrink-0 mr-3">
+                      <img
+                        src={relatedVideo.thumbnail}
+                        alt={relatedVideo.title}
+                        className="w-32 h-20 object-cover rounded"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center rounded">
+                        <Play className="h-6 w-6 text-white opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-white line-clamp-2 mb-1">
+                        {relatedVideo.title}
+                      </h4>
+                      <p className="text-xs text-gray-400 mb-1">
+                        {formatViewCount(relatedVideo.viewCount)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatPublishedDate(relatedVideo.publishedAt)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 // YouTube Video Card Component
-const YouTubeVideoCard = ({ video }) => {
+const YouTubeVideoCard = ({ video, onVideoSelect }) => {
   const formatDuration = (duration) => {
     const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
     const hours = (match[1] || '').replace('H', '');
@@ -43,17 +443,13 @@ const YouTubeVideoCard = ({ video }) => {
     return `${Math.floor(diffDays / 365)} years ago`;
   };
 
-  const openVideo = () => {
-    window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank');
-  };
-
   return (
     <motion.div
       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
-      onClick={openVideo}
+      onClick={() => onVideoSelect(video)}
     >
       <div className="relative">
         <img
@@ -127,968 +523,29 @@ const FilterDropdown = ({ label, options, value, onChange }) => (
   </div>
 );
 
-const VideoPage = () => {
-  const [videos, setVideos] = useState([]);
-  const [filteredVideos, setFilteredVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeClass, setActiveClass] = useState(null);
-  const [activeSubject, setActiveSubject] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-
-  const classes = [6, 7, 8, 9, 10, 11, 12];
-  const subjects = ['physics', 'chemistry', 'biology', 'mathematics', 'science'];
-
-  // Fetch videos from YouTube
-  const fetchYouTubeVideos = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // First, get the playlist items
-      const playlistResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${UPLOADS_PLAYLIST_ID}&maxResults=50&key=${API_KEY}`
-      );
-      
-      if (!playlistResponse.ok) {
-        throw new Error('Failed to fetch playlist items');
-      }
-      
-      const playlistData = await playlistResponse.json();
-      
-      if (!playlistData.items || playlistData.items.length === 0) {
-        setVideos([]);
-        setFilteredVideos([]);
-        return;
-      }
-
-      // Get video IDs for detailed information
-      const videoIds = playlistData.items.map(item => item.snippet.resourceId.videoId).join(',');
-      
-      // Fetch detailed video information
-      const videosResponse = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds}&key=${API_KEY}`
-      );
-      
-      if (!videosResponse.ok) {
-        throw new Error('Failed to fetch video details');
-      }
-      
-      const videosData = await videosResponse.json();
-      
-      // Process and format video data
-      const processedVideos = videosData.items.map(video => ({
-        id: video.id,
-        title: video.snippet.title,
-        description: video.snippet.description || 'No description available',
-        thumbnail: video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium?.url || video.snippet.thumbnails.default?.url,
-        publishedAt: video.snippet.publishedAt,
-        duration: video.contentDetails.duration,
-        viewCount: parseInt(video.statistics.viewCount || 0),
-        likeCount: parseInt(video.statistics.likeCount || 0),
-        tags: video.snippet.tags || [],
-        // Extract class and subject from title/description/tags
-        class: extractClass(video.snippet.title, video.snippet.description, video.snippet.tags),
-        subject: extractSubject(video.snippet.title, video.snippet.description, video.snippet.tags)
-      }));
-
-      setVideos(processedVideos);
-      setFilteredVideos(processedVideos);
-    } catch (err) {
-      console.error('Error fetching YouTube videos:', err);
-      setError('Failed to load videos. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Helper function to extract class from video metadata
-  const extractClass = (title, description, tags) => {
-    const text = `${title} ${description} ${tags?.join(' ') || ''}`.toLowerCase();
-    for (let i = 6; i <= 12; i++) {
-      if (text.includes(`class ${i}`) || text.includes(`grade ${i}`) || text.includes(`${i}th`)) {
-        return i;
-      }
-    }
-    return null;
-  };
-
-  // Helper function to extract subject from video metadata
-  const extractSubject = (title, description, tags) => {
-    const text = `${title} ${description} ${tags?.join(' ') || ''}`.toLowerCase();
-    const subjectKeywords = {
-      physics: ['physics', 'motion', 'force', 'energy', 'wave', 'optics', 'thermodynamics'],
-      chemistry: ['chemistry', 'chemical', 'molecule', 'atom', 'reaction', 'compound', 'element'],
-      biology: ['biology', 'cell', 'organism', 'genetics', 'evolution', 'ecology', 'anatomy'],
-      mathematics: ['math', 'mathematics', 'algebra', 'geometry', 'calculus', 'trigonometry', 'statistics'],
-      science: ['science', 'experiment', 'hypothesis', 'theory', 'research']
-    };
-
-    for (const [subject, keywords] of Object.entries(subjectKeywords)) {
-      if (keywords.some(keyword => text.includes(keyword))) {
-        return subject;
-      }
-    }
-    return null;
-  };
-
-  useEffect(() => {
-    fetchYouTubeVideos();
-  }, []);
-
-  useEffect(() => {
-    let result = videos;
-
-    // Filter by class
-    if (activeClass) {
-      result = result.filter(video => video.class === activeClass);
-    }
-
-    // Filter by subject
-    if (activeSubject) {
-      result = result.filter(video => video.subject === activeSubject);
-    }
-
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(video => 
-        video.title.toLowerCase().includes(query) || 
-        video.description.toLowerCase().includes(query) ||
-        video.tags.some(tag => tag.toLowerCase().includes(query))
-      );
-    }
-
-    setFilteredVideos(result);
-  }, [activeClass, activeSubject, searchQuery, videos]);
-
-  // Reset all filters
-  const resetFilters = () => {
-    setActiveClass(null);
-    setActiveSubject(null);
-    setSearchQuery('');
-  };
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  if (error) {
-    return (
-      <div className="pt-24 pb-16">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Video className="h-16 w-16 text-red-400 mb-4" />
-            <h3 className="text-xl font-semibold mb-2 text-red-600">Error Loading Videos</h3>
-            <p className="text-gray-500 mb-4">{error}</p>
-            <button
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              onClick={fetchYouTubeVideos}
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+// Tab Navigation Component
+const TabNavigation = ({ activeTab, onTabChange }) => {
+  const tabs = [
+    { id: 'videos', label: 'Videos', icon: Video },
+    { id: 'shorts', label: 'Shorts', icon: Play }
+  ];
 
   return (
-    <motion.div
-      className="pt-24 pb-16 min-h-screen bg-gray-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <motion.h1 
-            className="text-3xl md:text-4xl font-bold mb-4 text-gray-800"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            Video Lessons
-          </motion.h1>
-          <motion.p
-            className="text-gray-600 max-w-3xl"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            Watch our comprehensive video lessons for Physics, Chemistry, Biology, and more. 
-            Filter by class and subject to find the perfect video for your studies.
-          </motion.p>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <div className="relative flex-grow">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Search videos..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <button
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center md:w-auto"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-5 w-5 mr-2" />
-              Filters
-            </button>
-          </div>
-
-          {/* Filters */}
-          {showFilters && (
-            <motion.div 
-              className="bg-white p-4 rounded-md shadow-md mb-4"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FilterDropdown 
-                  label="Class"
-                  options={classes.map(c => ({ value: c.toString(), label: `Class ${c}` }))}
-                  value={activeClass?.toString() || ''}
-                  onChange={(value) => setActiveClass(value ? parseInt(value) : null)}
-                />
-                <FilterDropdown 
-                  label="Subject"
-                  options={subjects.map(s => ({ 
-                    value: s, 
-                    label: s.charAt(0).toUpperCase() + s.slice(1)
-                  }))}
-                  value={activeSubject || ''}
-                  onChange={(value) => setActiveSubject(value)}
-                />
-              </div>
-              <div className="mt-4 flex justify-end">
-                <button
-                  className="text-blue-600 hover:text-blue-700 font-medium"
-                  onClick={resetFilters}
-                >
-                  Reset Filters
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <span className="ml-4 text-gray-600">Loading videos...</span>
-          </div>
-        )}
-
-        {/* Videos List */}
-        {!loading && filteredVideos.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              {filteredVideos.length} {filteredVideos.length === 1 ? 'Video' : 'Videos'} Found
-            </h2>
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {filteredVideos.map((video) => (
-                <YouTubeVideoCard 
-                  key={video.id} 
-                  video={video}
-                />
-              ))}
-            </motion.div>
-          </div>
-        )}
-
-        {/* No Videos Found */}
-        {!loading && filteredVideos.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Video className="h-16 w-16 text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Videos Found</h3>
-            <p className="text-gray-500 mb-4">
-              We couldn't find any videos matching your filters. Try adjusting your search or filters.
-            </p>
-            <button
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              onClick={resetFilters}
-            >
-              Reset Filters
-            </button>
-          </div>
-        )}
-      </div>
-    </motion.div>
+    <div className="flex border-b border-gray-200 mb-8">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => onTabChange(tab.id)}
+          className={`flex items-center px-6 py-3 text-sm font-medium transition-colors relative ${
+            activeTab === tab.id
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <tab.icon className="h-4 w-4 mr-2" />
+          {tab.label}
+        </button>
+      ))}
+    </div>
   );
 };
-
-export default VideoPage;
-// import React, { useState, useEffect } from 'react';
-// import { motion, AnimatePresence } from 'framer-motion';
-// import { Search, Filter, Video, Play, Clock, Eye, X, ThumbsUp, Share2, Download, MoreHorizontal, ArrowLeft } from 'lucide-react';
-
-// // YouTube API configuration
-// const API_KEY = "AIzaSyBKhtL5_3QiPQxzhd60smT6UFZltLqyZBM";
-// const CHANNEL_ID = 'UCe_4EwNFWnGMMymUqRcDP7A';
-// const UPLOADS_PLAYLIST_ID = 'UUe_4EwNFWnGMMymUqRcDP7A';
-
-// // YouTube Video Player Component
-// const VideoPlayer = ({ video, onClose, onVideoSelect, allVideos }) => {
-//   const [showDescription, setShowDescription] = useState(false);
-  
-//   const formatViewCount = (count) => {
-//     if (count >= 1000000) {
-//       return `${(count / 1000000).toFixed(1)}M views`;
-//     } else if (count >= 1000) {
-//       return `${(count / 1000).toFixed(1)}K views`;
-//     }
-//     return `${count} views`;
-//   };
-
-//   const formatPublishedDate = (dateString) => {
-//     const date = new Date(dateString);
-//     return date.toLocaleDateString('en-US', { 
-//       year: 'numeric', 
-//       month: 'short', 
-//       day: 'numeric' 
-//     });
-//   };
-
-//   const getRelatedVideos = () => {
-//     return allVideos
-//       .filter(v => v.id !== video.id)
-//       .filter(v => v.subject === video.subject || v.class === video.class)
-//       .slice(0, 10);
-//   };
-
-//   return (
-//     <motion.div
-//       className="fixed inset-0 bg-black bg-opacity-95 z-50 overflow-y-auto"
-//       initial={{ opacity: 0 }}
-//       animate={{ opacity: 1 }}
-//       exit={{ opacity: 0 }}
-//     >
-//       <div className="min-h-screen bg-black text-white">
-//         {/* Header */}
-//         <div className="flex items-center justify-between p-4 bg-black bg-opacity-90">
-//           <button
-//             onClick={onClose}
-//             className="flex items-center text-white hover:text-gray-300 transition-colors"
-//           >
-//             <ArrowLeft className="h-6 w-6 mr-2" />
-//             Back to Videos
-//           </button>
-//           <button
-//             onClick={onClose}
-//             className="text-white hover:text-gray-300 transition-colors"
-//           >
-//             <X className="h-6 w-6" />
-//           </button>
-//         </div>
-
-//         <div className="max-w-7xl mx-auto px-4 pb-8">
-//           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-//             {/* Main Video Section */}
-//             <div className="lg:col-span-2">
-//               {/* Video Player */}
-//               <div className="relative bg-black rounded-lg overflow-hidden mb-4">
-//                 <div className="aspect-video">
-//                   <iframe
-//                     src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
-//                     title={video.title}
-//                     className="w-full h-full"
-//                     frameBorder="0"
-//                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-//                     allowFullScreen
-//                   ></iframe>
-//                 </div>
-//               </div>
-
-//               {/* Video Info */}
-//               <div className="mb-6">
-//                 <h1 className="text-xl md:text-2xl font-bold mb-2 text-white">
-//                   {video.title}
-//                 </h1>
-                
-//                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-//                   <div className="flex items-center text-gray-300 text-sm mb-2 md:mb-0">
-//                     <Eye className="h-4 w-4 mr-2" />
-//                     <span className="mr-4">{formatViewCount(video.viewCount)}</span>
-//                     <span>{formatPublishedDate(video.publishedAt)}</span>
-//                   </div>
-                  
-//                   <div className="flex items-center space-x-4">
-//                     <button className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
-//                       <ThumbsUp className="h-4 w-4" />
-//                       <span className="text-sm">{video.likeCount ? `${video.likeCount}` : 'Like'}</span>
-//                     </button>
-//                     <button className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
-//                       <Share2 className="h-4 w-4" />
-//                       <span className="text-sm">Share</span>
-//                     </button>
-//                     <button className="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
-//                       <Download className="h-4 w-4" />
-//                       <span className="text-sm">Save</span>
-//                     </button>
-//                     <button className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
-//                       <MoreHorizontal className="h-4 w-4" />
-//                     </button>
-//                   </div>
-//                 </div>
-
-//                 {/* Tags */}
-//                 {video.tags && video.tags.length > 0 && (
-//                   <div className="flex flex-wrap gap-2 mb-4">
-//                     {video.tags.slice(0, 5).map((tag, index) => (
-//                       <span
-//                         key={index}
-//                         className="px-3 py-1 bg-gray-800 text-gray-300 text-xs rounded-full"
-//                       >
-//                         {tag}
-//                       </span>
-//                     ))}
-//                   </div>
-//                 )}
-
-//                 {/* Description */}
-//                 <div className="bg-gray-900 rounded-lg p-4">
-//                   <div className="flex items-center justify-between mb-3">
-//                     <h3 className="font-semibold text-white">Description</h3>
-//                     <button
-//                       onClick={() => setShowDescription(!showDescription)}
-//                       className="text-blue-400 hover:text-blue-300 text-sm"
-//                     >
-//                       {showDescription ? 'Show less' : 'Show more'}
-//                     </button>
-//                   </div>
-//                   <p className={`text-gray-300 text-sm leading-relaxed ${
-//                     showDescription ? '' : 'line-clamp-3'
-//                   }`}>
-//                     {video.description || 'No description available'}
-//                   </p>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Sidebar - Related Videos */}
-//             <div className="lg:col-span-1">
-//               <h3 className="text-lg font-semibold mb-4 text-white">Related Videos</h3>
-//               <div className="space-y-3">
-//                 {getRelatedVideos().map((relatedVideo) => (
-//                   <div
-//                     key={relatedVideo.id}
-//                     className="flex cursor-pointer hover:bg-gray-900 p-2 rounded-lg transition-colors"
-//                     onClick={() => onVideoSelect(relatedVideo)}
-//                   >
-//                     <div className="relative flex-shrink-0 mr-3">
-//                       <img
-//                         src={relatedVideo.thumbnail}
-//                         alt={relatedVideo.title}
-//                         className="w-32 h-20 object-cover rounded"
-//                       />
-//                       <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center rounded">
-//                         <Play className="h-6 w-6 text-white opacity-0 hover:opacity-100 transition-opacity duration-300" />
-//                       </div>
-//                     </div>
-//                     <div className="flex-1 min-w-0">
-//                       <h4 className="text-sm font-medium text-white line-clamp-2 mb-1">
-//                         {relatedVideo.title}
-//                       </h4>
-//                       <p className="text-xs text-gray-400 mb-1">
-//                         {formatViewCount(relatedVideo.viewCount)}
-//                       </p>
-//                       <p className="text-xs text-gray-500">
-//                         {formatPublishedDate(relatedVideo.publishedAt)}
-//                       </p>
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </motion.div>
-//   );
-// };
-
-// // YouTube Video Card Component
-// const YouTubeVideoCard = ({ video, onVideoSelect }) => {
-//   const formatDuration = (duration) => {
-//     const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-//     const hours = (match[1] || '').replace('H', '');
-//     const minutes = (match[2] || '').replace('M', '');
-//     const seconds = (match[3] || '').replace('S', '');
-    
-//     if (hours) {
-//       return `${hours}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`;
-//     }
-//     return `${minutes || '0'}:${seconds.padStart(2, '0')}`;
-//   };
-
-//   const formatViewCount = (count) => {
-//     if (count >= 1000000) {
-//       return `${(count / 1000000).toFixed(1)}M views`;
-//     } else if (count >= 1000) {
-//       return `${(count / 1000).toFixed(1)}K views`;
-//     }
-//     return `${count} views`;
-//   };
-
-//   const formatPublishedDate = (dateString) => {
-//     const date = new Date(dateString);
-//     const now = new Date();
-//     const diffTime = Math.abs(now - date);
-//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-//     if (diffDays === 1) return '1 day ago';
-//     if (diffDays < 7) return `${diffDays} days ago`;
-//     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-//     if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-//     return `${Math.floor(diffDays / 365)} years ago`;
-//   };
-
-//   return (
-//     <motion.div
-//       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-//       initial={{ opacity: 0, y: 20 }}
-//       animate={{ opacity: 1, y: 0 }}
-//       whileHover={{ y: -5 }}
-//       onClick={() => onVideoSelect(video)}
-//     >
-//       <div className="relative">
-//         <img
-//           src={video.thumbnail}
-//           alt={video.title}
-//           className="w-full h-48 object-cover"
-//           loading="lazy"
-//         />
-//         <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-//           <Play className="h-12 w-12 text-white opacity-0 hover:opacity-100 transition-opacity duration-300" />
-//         </div>
-//         {video.duration && (
-//           <div className="absolute bottom-2 right-2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded">
-//             <Clock className="h-3 w-3 inline mr-1" />
-//             {formatDuration(video.duration)}
-//           </div>
-//         )}
-//       </div>
-      
-//       <div className="p-4">
-//         <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-800">
-//           {video.title}
-//         </h3>
-//         <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-//           {video.description}
-//         </p>
-        
-//         <div className="flex items-center justify-between text-xs text-gray-500">
-//           <div className="flex items-center">
-//             <Eye className="h-3 w-3 mr-1" />
-//             {formatViewCount(video.viewCount)}
-//           </div>
-//           <span>{formatPublishedDate(video.publishedAt)}</span>
-//         </div>
-        
-//         {video.tags && (
-//           <div className="mt-3 flex flex-wrap gap-1">
-//             {video.tags.slice(0, 3).map((tag, index) => (
-//               <span
-//                 key={index}
-//                 className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-//               >
-//                 {tag}
-//               </span>
-//             ))}
-//           </div>
-//         )}
-//       </div>
-//     </motion.div>
-//   );
-// };
-
-// // Filter Dropdown Component
-// const FilterDropdown = ({ label, options, value, onChange }) => (
-//   <div>
-//     <label className="block text-sm font-medium text-gray-700 mb-2">
-//       {label}
-//     </label>
-//     <select
-//       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//       value={value}
-//       onChange={(e) => onChange(e.target.value)}
-//     >
-//       <option value="">All {label}s</option>
-//       {options.map((option) => (
-//         <option key={option.value} value={option.value}>
-//           {option.label}
-//         </option>
-//       ))}
-//     </select>
-//   </div>
-// );
-
-// const VideoPage = () => {
-//   const [videos, setVideos] = useState([]);
-//   const [filteredVideos, setFilteredVideos] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-//   const [activeClass, setActiveClass] = useState(null);
-//   const [activeSubject, setActiveSubject] = useState(null);
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const [showFilters, setShowFilters] = useState(false);
-//   const [selectedVideo, setSelectedVideo] = useState(null);
-
-//   const classes = [6, 7, 8, 9, 10, 11, 12];
-//   const subjects = ['physics', 'chemistry', 'biology', 'mathematics', 'science'];
-
-//   // Fetch videos from YouTube
-//   const fetchYouTubeVideos = async () => {
-//     try {
-//       setLoading(true);
-//       setError(null);
-
-//       // First, get the playlist items
-//       const playlistResponse = await fetch(
-//         `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${UPLOADS_PLAYLIST_ID}&maxResults=50&key=${API_KEY}`
-//       );
-      
-//       if (!playlistResponse.ok) {
-//         throw new Error('Failed to fetch playlist items');
-//       }
-      
-//       const playlistData = await playlistResponse.json();
-      
-//       if (!playlistData.items || playlistData.items.length === 0) {
-//         setVideos([]);
-//         setFilteredVideos([]);
-//         return;
-//       }
-
-//       // Get video IDs for detailed information
-//       const videoIds = playlistData.items.map(item => item.snippet.resourceId.videoId).join(',');
-      
-//       // Fetch detailed video information
-//       const videosResponse = await fetch(
-//         `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds}&key=${API_KEY}`
-//       );
-      
-//       if (!videosResponse.ok) {
-//         throw new Error('Failed to fetch video details');
-//       }
-      
-//       const videosData = await videosResponse.json();
-      
-//       // Process and format video data
-//       const processedVideos = videosData.items.map(video => ({
-//         id: video.id,
-//         title: video.snippet.title,
-//         description: video.snippet.description || 'No description available',
-//         thumbnail: video.snippet.thumbnails.high?.url || video.snippet.thumbnails.medium?.url || video.snippet.thumbnails.default?.url,
-//         publishedAt: video.snippet.publishedAt,
-//         duration: video.contentDetails.duration,
-//         viewCount: parseInt(video.statistics.viewCount || 0),
-//         likeCount: parseInt(video.statistics.likeCount || 0),
-//         tags: video.snippet.tags || [],
-//         // Extract class and subject from title/description/tags
-//         class: extractClass(video.snippet.title, video.snippet.description, video.snippet.tags),
-//         subject: extractSubject(video.snippet.title, video.snippet.description, video.snippet.tags)
-//       }));
-
-//       setVideos(processedVideos);
-//       setFilteredVideos(processedVideos);
-//     } catch (err) {
-//       console.error('Error fetching YouTube videos:', err);
-//       setError('Failed to load videos. Please try again later.');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Helper function to extract class from video metadata
-//   const extractClass = (title, description, tags) => {
-//     const text = `${title} ${description} ${tags?.join(' ') || ''}`.toLowerCase();
-//     for (let i = 6; i <= 12; i++) {
-//       if (text.includes(`class ${i}`) || text.includes(`grade ${i}`) || text.includes(`${i}th`)) {
-//         return i;
-//       }
-//     }
-//     return null;
-//   };
-
-//   // Helper function to extract subject from video metadata
-//   const extractSubject = (title, description, tags) => {
-//     const text = `${title} ${description} ${tags?.join(' ') || ''}`.toLowerCase();
-//     const subjectKeywords = {
-//       physics: ['physics', 'motion', 'force', 'energy', 'wave', 'optics', 'thermodynamics'],
-//       chemistry: ['chemistry', 'chemical', 'molecule', 'atom', 'reaction', 'compound', 'element'],
-//       biology: ['biology', 'cell', 'organism', 'genetics', 'evolution', 'ecology', 'anatomy'],
-//       mathematics: ['math', 'mathematics', 'algebra', 'geometry', 'calculus', 'trigonometry', 'statistics'],
-//       science: ['science', 'experiment', 'hypothesis', 'theory', 'research']
-//     };
-
-//     for (const [subject, keywords] of Object.entries(subjectKeywords)) {
-//       if (keywords.some(keyword => text.includes(keyword))) {
-//         return subject;
-//       }
-//     }
-//     return null;
-//   };
-
-//   useEffect(() => {
-//     fetchYouTubeVideos();
-//   }, []);
-
-//   useEffect(() => {
-//     let result = videos;
-
-//     // Filter by class
-//     if (activeClass) {
-//       result = result.filter(video => video.class === activeClass);
-//     }
-
-//     // Filter by subject
-//     if (activeSubject) {
-//       result = result.filter(video => video.subject === activeSubject);
-//     }
-
-//     // Filter by search query
-//     if (searchQuery) {
-//       const query = searchQuery.toLowerCase();
-//       result = result.filter(video => 
-//         video.title.toLowerCase().includes(query) || 
-//         video.description.toLowerCase().includes(query) ||
-//         video.tags.some(tag => tag.toLowerCase().includes(query))
-//       );
-//     }
-
-//     setFilteredVideos(result);
-//   }, [activeClass, activeSubject, searchQuery, videos]);
-
-//   // Reset all filters
-//   const resetFilters = () => {
-//     setActiveClass(null);
-//     setActiveSubject(null);
-//     setSearchQuery('');
-//   };
-
-//   // Handle video selection
-//   const handleVideoSelect = (video) => {
-//     setSelectedVideo(video);
-//   };
-
-//   // Handle video close
-//   const handleVideoClose = () => {
-//     setSelectedVideo(null);
-//   };
-
-//   // Animation variants
-//   const containerVariants = {
-//     hidden: { opacity: 0 },
-//     visible: {
-//       opacity: 1,
-//       transition: {
-//         staggerChildren: 0.1
-//       }
-//     }
-//   };
-
-//   if (error) {
-//     return (
-//       <div className="pt-24 pb-16">
-//         <div className="container mx-auto px-4">
-//           <div className="flex flex-col items-center justify-center py-12 text-center">
-//             <Video className="h-16 w-16 text-red-400 mb-4" />
-//             <h3 className="text-xl font-semibold mb-2 text-red-600">Error Loading Videos</h3>
-//             <p className="text-gray-500 mb-4">{error}</p>
-//             <button
-//               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-//               onClick={fetchYouTubeVideos}
-//             >
-//               Try Again
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <>
-//       <motion.div
-//         className="pt-24 pb-16 min-h-screen bg-gray-50"
-//         initial={{ opacity: 0 }}
-//         animate={{ opacity: 1 }}
-//         exit={{ opacity: 0 }}
-//       >
-//         <div className="container mx-auto px-4">
-//           {/* Header */}
-//           <div className="mb-8">
-//             <motion.h1 
-//               className="text-3xl md:text-4xl font-bold mb-4 text-gray-800"
-//               initial={{ opacity: 0, y: -20 }}
-//               animate={{ opacity: 1, y: 0 }}
-//               transition={{ duration: 0.5 }}
-//             >
-//               Video Lessons
-//             </motion.h1>
-//             <motion.p
-//               className="text-gray-600 max-w-3xl"
-//               initial={{ opacity: 0, y: -20 }}
-//               animate={{ opacity: 1, y: 0 }}
-//               transition={{ duration: 0.5, delay: 0.2 }}
-//             >
-//               Watch our comprehensive video lessons for Physics, Chemistry, Biology, and more. 
-//               Filter by class and subject to find the perfect video for your studies.
-//             </motion.p>
-//           </div>
-
-//           {/* Search and Filters */}
-//           <div className="mb-8">
-//             <div className="flex flex-col md:flex-row gap-4 mb-4">
-//               <div className="relative flex-grow">
-//                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-//                   <Search className="h-5 w-5 text-gray-400" />
-//                 </div>
-//                 <input
-//                   type="text"
-//                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                   placeholder="Search videos..."
-//                   value={searchQuery}
-//                   onChange={(e) => setSearchQuery(e.target.value)}
-//                 />
-//               </div>
-//               <button
-//                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center md:w-auto"
-//                 onClick={() => setShowFilters(!showFilters)}
-//               >
-//                 <Filter className="h-5 w-5 mr-2" />
-//                 Filters
-//               </button>
-//             </div>
-
-//             {/* Filters */}
-//             {showFilters && (
-//               <motion.div 
-//                 className="bg-white p-4 rounded-md shadow-md mb-4"
-//                 initial={{ opacity: 0, height: 0 }}
-//                 animate={{ opacity: 1, height: 'auto' }}
-//                 exit={{ opacity: 0, height: 0 }}
-//                 transition={{ duration: 0.3 }}
-//               >
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                   <FilterDropdown 
-//                     label="Class"
-//                     options={classes.map(c => ({ value: c.toString(), label: `Class ${c}` }))}
-//                     value={activeClass?.toString() || ''}
-//                     onChange={(value) => setActiveClass(value ? parseInt(value) : null)}
-//                   />
-//                   <FilterDropdown 
-//                     label="Subject"
-//                     options={subjects.map(s => ({ 
-//                       value: s, 
-//                       label: s.charAt(0).toUpperCase() + s.slice(1)
-//                     }))}
-//                     value={activeSubject || ''}
-//                     onChange={(value) => setActiveSubject(value)}
-//                   />
-//                 </div>
-//                 <div className="mt-4 flex justify-end">
-//                   <button
-//                     className="text-blue-600 hover:text-blue-700 font-medium"
-//                     onClick={resetFilters}
-//                   >
-//                     Reset Filters
-//                   </button>
-//                 </div>
-//               </motion.div>
-//             )}
-//           </div>
-
-//           {/* Loading State */}
-//           {loading && (
-//             <div className="flex justify-center items-center py-12">
-//               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-//               <span className="ml-4 text-gray-600">Loading videos...</span>
-//             </div>
-//           )}
-
-//           {/* Videos List */}
-//           {!loading && filteredVideos.length > 0 && (
-//             <div className="mb-8">
-//               <h2 className="text-xl font-semibold mb-4 text-gray-800">
-//                 {filteredVideos.length} {filteredVideos.length === 1 ? 'Video' : 'Videos'} Found
-//               </h2>
-//               <motion.div 
-//                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-//                 variants={containerVariants}
-//                 initial="hidden"
-//                 animate="visible"
-//               >
-//                 {filteredVideos.map((video) => (
-//                   <YouTubeVideoCard 
-//                     key={video.id} 
-//                     video={video}
-//                     onVideoSelect={handleVideoSelect}
-//                   />
-//                 ))}
-//               </motion.div>
-//             </div>
-//           )}
-
-//           {/* No Videos Found */}
-//           {!loading && filteredVideos.length === 0 && (
-//             <div className="flex flex-col items-center justify-center py-12 text-center">
-//               <Video className="h-16 w-16 text-gray-400 mb-4" />
-//               <h3 className="text-xl font-semibold mb-2">No Videos Found</h3>
-//               <p className="text-gray-500 mb-4">
-//                 We couldn't find any videos matching your filters. Try adjusting your search or filters.
-//               </p>
-//               <button
-//                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-//                 onClick={resetFilters}
-//               >
-//                 Reset Filters
-//               </button>
-//             </div>
-//           )}
-//         </div>
-//       </motion.div>
-
-//       {/* Video Player Modal */}
-//       <AnimatePresence>
-//         {selectedVideo && (
-//           <VideoPlayer
-//             video={selectedVideo}
-//             onClose={handleVideoClose}
-//             onVideoSelect={handleVideoSelect}
-//             allVideos={videos}
-//           />
-//         )}
-//       </AnimatePresence>
-//     </>
-//   );
-// };
-
-// export default VideoPage;

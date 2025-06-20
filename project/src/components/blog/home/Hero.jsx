@@ -80,7 +80,8 @@ const Hero = () => {
               variants={itemVariants}
               className="text-lg text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0"
             >
-              Comprehensive learning resources for Physics, Chemistry, and Biology for classes 6 to 12. Expertly crafted by MHS Guruk.
+              Comprehensive learning resources for Physics, Chemistry, and Biology for classes 6 to 12. Expertly crafted by PCMB with Malika
+
             </motion.p>
             
             <motion.div 

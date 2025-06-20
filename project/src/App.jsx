@@ -5,6 +5,7 @@ import { AnimatePresence } from 'framer-motion';
 // Layout components
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import { UserProvider } from './components/context/user'; // Adjust path as needed
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -15,13 +16,17 @@ import ServicesPage from './pages/ServicesPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import ScrollToTop from './components/utils/ScrollToTop';
+import Auth from "./Authentication/Auth";
+import Login from "./Authentication/Login"
+import SignupForm from './Authentication/Singup';
+import ForgotPasswordForm from './Authentication/Frogget';
 
 // Admin components
 import AdminNotes from './Admin/AdminNotes';
 import AdminBlog from "./Admin/AdminBlog";
 import Admin from "./Admin/Admin";
 import HistoryPage from './Admin/History';
-import Login from './Admin/Login';
+import AdminLogin from './Admin/AdLogin';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -62,6 +67,7 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   return (
+    <UserProvider>
     <Router>
       <ScrollToTop />
       <div className="flex flex-col min-h-screen">
@@ -76,14 +82,20 @@ function App() {
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/singup" element={<SignupForm />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/frogget-password" element={<ForgotPasswordForm />} />
               
               {/* Admin Login Route (public but redirects if already logged in) */}
               <Route 
                 path="/admin/login" 
                 element={
                   <PublicRoute>
-                    <Login />
+                    <AdminLogin />
                   </PublicRoute>
                 } 
               />
@@ -134,6 +146,7 @@ function App() {
         <Footer />
       </div>
     </Router>
+    </UserProvider>
   );
 }
 

@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { BookOpen, Video, FilePen, HeartHandshake, ChevronRight, PlayCircle, Users, Star } from 'lucide-react';
 
-import Hero from '../components/home/Hero';
-import SubjectCard from '../components/home/SubjectCard';
-import TestimonialCard from '../components/home/TestimonialCard';
+import Hero from '../components/blog/home/Hero';
+import SubjectCard from '../components/blog/home/SubjectCard';
+import TestimonialCard from '../components/blog/home/TestimonialCard';
 
 const HomePage = () => {
   const subjects = [
@@ -196,7 +196,7 @@ const HomePage = () => {
                 Subscribe to our YouTube channel for regular updates, live classes, and exclusive content to boost your learning journey.
               </motion.p>
               <motion.a 
-                href="https://youtube.com" 
+                href="https://www.youtube.com/@PCMB_with_Malika" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center px-6 py-3 bg-white text-primary-600 rounded-md font-medium hover:bg-gray-100 transition-colors"

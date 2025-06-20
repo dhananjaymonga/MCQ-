@@ -42,14 +42,14 @@ const ContactPage = () => {
     {
       icon: <Phone className="h-6 w-6 text-primary-500" />,
       title: 'Phone',
-      details: '+91 98765 43210',
-      action: 'tel:+919876543210',
+      details: '+91 8690167053',
+      action: 'tel:+8690167053',
       actionText: 'Call Us'
     },
     {
       icon: <Mail className="h-6 w-6 text-primary-500" />,
       title: 'Email',
-      details: 'contact@mhsguruk.com',
+      details: 'pcmwithmalika@gmail.com',
       action: 'mailto:contact@mhsguruk.com',
       actionText: 'Email Us'
     },

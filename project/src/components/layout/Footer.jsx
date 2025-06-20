@@ -11,7 +11,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-xl font-heading font-semibold mb-4">MHS Guruk</h3>
+            <h3 className="text-xl font-heading font-semibold mb-4">PCMB with Malika
+</h3>
             <p className="text-gray-300 mb-4">
               Helping students master Physics, Chemistry, and Biology through engaging video lessons, comprehensive notes, and personalized guidance.
             </p>
@@ -97,11 +98,11 @@ const Footer = () => {
               </li>
               <li className="flex items-center space-x-3">
                 <Phone size={20} className="text-gray-300 flex-shrink-0" />
-                <span className="text-gray-300">+91 98765 43210</span>
+                <span className="text-gray-300">+91 8690167053</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail size={20} className="text-gray-300 flex-shrink-0" />
-                <span className="text-gray-300">contact@mhsguruk.com</span>
+                <span className="text-gray-300"> pcmwithmalika@gmail.com</span>
               </li>
             </ul>
           </div>
@@ -109,7 +110,8 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400">
-            © {currentYear} MHS Guruk. All rights reserved.
+            © {currentYear}PCMB with Malika
+. All rights reserved.
           </p>
         </div>
       </div>
