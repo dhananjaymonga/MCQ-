@@ -46,12 +46,13 @@ const Header = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Notes', path: '/notes' },
-    { name: 'Videos', path: '/videos' },
-    // { name: 'Blog', path: '/blog' },
-    { name: 'Services', path: '/services' },
     { name: 'About', path: '/about' },
+    { name: 'Videos', path: '/videos' },
+    { name: 'Notes', path: '/notes' },
+    // { name: 'Blog', path: '/blog' },
+    { name: 'Quiz', path: '/quiz' },
     { name: 'Contact', path: '/contact' },
+    { name: 'Services', path: '/services' },
   ];
 
   // Handle logout

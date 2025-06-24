@@ -20,14 +20,14 @@ import Auth from "./Authentication/Auth";
 import Login from "./Authentication/Login"
 import SignupForm from './Authentication/Singup';
 import ForgotPasswordForm from './Authentication/Frogget';
-
 // Admin components
+import AdminQuiz from "./Admin/AdminQuiz"
 import AdminNotes from './Admin/AdminNotes';
 import AdminBlog from "./Admin/AdminBlog";
 import Admin from "./Admin/Admin";
 import HistoryPage from './Admin/History';
 import AdminLogin from './Admin/AdLogin';
-
+import QuizApp from './pages/Quiz';
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = () => {
@@ -82,8 +82,7 @@ function App() {
               {/* <Route path="/blog" element={<BlogPage />} /> */}
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/about" element={<AboutPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/about" element={<AboutPage />} />
+              <Route path="/quiz" element={<QuizApp />} />
               <Route path="/login" element={<Login />} />
               <Route path="/singup" element={<SignupForm />} />
               <Route path="/auth" element={<Auth />} />
@@ -96,6 +95,14 @@ function App() {
                 element={
                   <PublicRoute>
                     <AdminLogin />
+                  </PublicRoute>
+                } 
+              />
+              <Route 
+                path="/admin/quiz" 
+                element={
+                  <PublicRoute>
+                    <AdminQuiz />
                   </PublicRoute>
                 } 
               />
