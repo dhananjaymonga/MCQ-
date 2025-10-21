@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { User, Mail, Lock } from 'lucide-react';
 
-const SignupForm = ({ switchToLogin}) => {
+const SignupForm = ({ switchToLogin }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -17,7 +17,7 @@ const SignupForm = ({ switchToLogin}) => {
     setLoading(true);
     setError('');
     try {
-    await axios.post('http://localhost:5000/api/send-otp', { email })
+      await axios.post('http://localhost:3000/api/auth/send-otp', { email });
       alert('OTP sent to your email!');
       setStep('verifyOtp');
     } catch (err) {
@@ -30,34 +30,30 @@ const SignupForm = ({ switchToLogin}) => {
   const handleSignup = async () => {
     setLoading(true);
     setError('');
-  
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setLoading(false);
       return;
     }
-  
+
     try {
-      await axios.post('http://localhost:5000/auth/verify-otp', {
+      const response = await axios.post('http://localhost:3000/api/auth/verify-otp', {
         name,
         email,
         password,
         otp,
       });
       alert('Signup successful!');
-      switchToLogin(); // 👈 Redirect to login form
-
-
+      switchToLogin(); // Redirect to login form
     } catch (err) {
-      console.error(err);  // Log the error
-
+      console.error(err);
       setError(err.response?.data?.message || 'Signup failed');
     } finally {
       setLoading(false);
     }
   };
-  
-  
+
   return (
     <form onSubmit={(e) => e.preventDefault()} className="max-w-md mx-auto p-6 bg-white shadow-xl rounded-xl mt-10 space-y-6">
       <h2 className="text-2xl font-bold text-center">Signup</h2>
@@ -95,13 +91,13 @@ const SignupForm = ({ switchToLogin}) => {
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
-  type="text"
-  value={otp}
-  onChange={(e) => setOtp(e.target.value)}
-  placeholder="Enter OTP"
-  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-  required
-/>
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter OTP"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              required
+            />
           </div>
 
           <div className="relative">
@@ -173,7 +169,6 @@ const SignupForm = ({ switchToLogin}) => {
           Login
         </button>
       </p>
-
     </form>
   );
 };
