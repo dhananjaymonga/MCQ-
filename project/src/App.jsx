@@ -28,6 +28,7 @@ import Admin from "./Admin/Admin";
 import HistoryPage from './Admin/History';
 import AdminLogin from './Admin/AdLogin';
 import QuizApp from './pages/Quiz';
+import ProfilePage from './Profile';
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = () => {
@@ -87,6 +88,7 @@ function App() {
               <Route path="/singup" element={<SignupForm />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/profile" element={<ProfilePage/>} />
               <Route path="/frogget-password" element={<ForgotPasswordForm />} />
               
               {/* Admin Login Route (public but redirects if already logged in) */}
